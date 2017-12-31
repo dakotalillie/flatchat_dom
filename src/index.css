@@ -1,0 +1,73 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+.messages_list_header_title_input:focus {
+  outline: 0;
+}
+
+.profile_button:focus,
+.edit_conversation_button:focus {
+  outline: 0 !important;
+  background-color: white;
+}
+
+.add_conversation_button:focus {
+  outline: 0 !important;
+  background-color: #5FB760;
+}
+
+.send_message_button:focus {
+  outline: 0 !important;
+  border-color: transparent;
+  background-color: #377BB5;
+}
+
+.conversation_card.active {
+  background-color: #eee;
+}
+
+.user_message {
+  text-align: -webkit-right;
+}
+
+.user_message > .message_content {
+  background-color: #377BB5;
+  color: white;
+}
+
+.foreign_message > .message_content {
+  background-color: #ddd;
+  color: black;
+}
+
+.greeting {
+  left: -380px;
+  position: absolute;
+  right: 420px;
+  transition: all .4s ease-out;
+}
+
+.greeting.active {
+  left: 20px;
+  position: absolute;
+  right: 20px;
+  transition: all .4s ease-out;
+}
+
+.login {
+  left: 420px;
+  position: absolute;
+  right: -380px;
+  transition: all .4s ease-out;
+}
+
+.login.active {
+  left: 20px;
+  position: absolute;
+  right: 20px;
+  transition: all .4s ease-out;
+}
