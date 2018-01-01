@@ -14,7 +14,7 @@ const Greeting = ({ active, handleClick }) => (
     >
       Log In
     </Button>
-    <Button bsSize="large" block>
+    <Button bsSize="large" block onClick={e => handleClick(e, "signup")}>
       Sign Up
     </Button>
   </div>

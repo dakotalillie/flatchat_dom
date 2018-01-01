@@ -269,3 +269,19 @@ export const noToken = () => {
     type: "NO_TOKEN"
   };
 };
+
+/* --------------------------------------- */
+
+export const signup = params => {
+  return dispatch => {
+    dispatch(requestCurrentUser());
+    return fetch(`${API_ROOT}/signup`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(params)
+    })
+      .then(res => res.json())
+      .then(json => dispatch(receiveCurrentUser(json)))
+      .then(() => (window.location.href = "/"));
+  }
+}

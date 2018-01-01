@@ -47,7 +47,11 @@ export function activeConversationId(state = null, action) {
           return 1;
         }
       });
-      return sortedConvos[0].id;
+      if (sortedConvos.length) {
+        return sortedConvos[0].id;
+      } else {
+        return state
+      }
     case "RECEIVE_ADDED_CONVERSATION":
     case "CHANGE_ACTIVE_CONVERSATION":
       return action.payload.id;
