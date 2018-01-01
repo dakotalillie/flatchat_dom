@@ -3,51 +3,38 @@ import {
   Modal,
   Button,
   FormGroup,
-  FormControl,
   ControlLabel
 } from "react-bootstrap";
 import { connect } from "react-redux";
-import { AsyncTypeahead } from "react-bootstrap-typeahead";
 import { hideNewConversationModal, addConversation } from "../redux/actions";
+import Typeahead from "./Typeahead";
 
 class NewConversationModal extends React.Component {
   state = {
-    value: ""
+    selected: []
   };
-  handleChange = e => {
-    this.setState({ value: e.target.value });
+  handleSelect = selected => {
+    this.setState({ selected });
   };
   handleSubmit = e => {
     e.preventDefault();
-    this.props.newConversation(this.state.value);
+    const users = [
+      this.props.currentUser.id,
+      ...this.state.selected.map(i => i.id)
+    ]
+    this.props.newConversation(users);
     this.props.hide();
-    this.setState({ value: "" });
-  };
-  setInput = ref => {
-    if (ref) {
-      this.input = ref
-    }
-    this.input.focus();
+    this.setState({ selected: [] });
   };
   render = () => (
     <Modal show={this.props.isShown} onHide={this.props.hide}>
       <form onSubmit={this.handleSubmit}>
-        <Modal.Header closeButton>
-          <Modal.Title>New Conversation</Modal.Title>
-        </Modal.Header>
         <Modal.Body>
           <FormGroup controlId="formBasicText">
-            <ControlLabel>
-              What do you want to name this conversation?
-            </ControlLabel>
-            <FormControl
-              type="text"
-              value={this.state.value}
-              placeholder="Enter text"
-              onChange={this.handleChange}
-              inputRef={ref => {
-                this.setInput(ref);
-              }}
+            <ControlLabel>Who would you like to chat with?</ControlLabel>
+            <Typeahead
+              handleSelect={this.handleSelect}
+              selected={this.state.selected}
             />
           </FormGroup>
         </Modal.Body>
@@ -64,7 +51,8 @@ class NewConversationModal extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    isShown: state.showNewConversationModal
+    isShown: state.showNewConversationModal,
+    currentUser: state.currentUser
   };
 }
 
@@ -76,12 +64,6 @@ const mapDispatchToProps = dispatch => ({
     dispatch(addConversation(title));
   }
 });
-
-// const mapDispatchToProps = dispatch => ({
-//   editConversationTitle: (conversationId, text) => {
-//     dispatch(editConversationTitle(conversationId, text));
-//   }
-// });
 
 export default connect(mapStateToProps, mapDispatchToProps)(
   NewConversationModal

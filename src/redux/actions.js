@@ -1,21 +1,9 @@
-const API_ROOT = `http://localhost:3000/api/v1`;
+export const API_ROOT = `http://localhost:3000/api/v1`;
 const token = localStorage.getItem("token");
 const headers = {
   "Content-Type": "application/json",
   Accept: "application/json",
   Authorization: token
-};
-
-export const addConversation = (id, title) => {
-  return {
-    type: "ADD_CONVERSATION",
-    payload: {
-      id,
-      title,
-      loading: false,
-      messages: []
-    }
-  };
 };
 
 export const editConversationTitle = (conversationId, text) => {
@@ -58,6 +46,19 @@ export const showUserProfileModal = () => {
 export const hideUserProfileModal = () => {
   return {
     type: "HIDE_USER_PROFILE_MODAL"
+  };
+};
+
+export const showEditConversationModal = conversationId => {
+  return {
+    type: "SHOW_EDIT_CONVERSATION_MODAL",
+    payload: conversationId
+  };
+};
+
+export const hideEditConversationModal = () => {
+  return {
+    type: "HIDE_EDIT_CONVERSATION_MODAL"
   };
 };
 
@@ -114,7 +115,9 @@ export const fetchMessagesForActiveConversation = activeConversationId => {
     })
       .then(res => res.json())
       .then(messages => {
-        dispatch(receiveMessages(messages));
+        if (messages.length) {
+          dispatch(receiveMessages(messages));
+        }
       });
   };
 };
@@ -143,6 +146,32 @@ export const addMessage = (text, conversation_id, user_id) => {
     })
       .then(res => res.json())
       .then(message => dispatch(receiveAddedMessage(message)));
+  };
+};
+
+/* --------------------------------------- */
+
+const sendAddedConversation = conversation_id => ({
+  type: "SEND_ADDED_CONVERSATION"
+});
+
+const receiveAddedConversation = conversation => ({
+  type: "RECEIVE_ADDED_CONVERSATION",
+  payload: conversation
+});
+
+export const addConversation = users => {
+  return dispatch => {
+    dispatch(sendAddedConversation());
+    return fetch(`${API_ROOT}/conversations`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ users })
+    })
+      .then(res => res.json())
+      .then(conversation => {
+        dispatch(receiveAddedConversation(conversation));
+      });
   };
 };
 
@@ -178,10 +207,34 @@ export const fetchCurrentUser = () => {
 
 /* --------------------------------------- */
 
+const receiveLeftConversation = json => {
+  return {
+    type: "RECEIVE_LEFT_CONVERSATION",
+    payload: json
+  };
+};
+
+export const leaveConversation = (conversation_id, user_id) => {
+  return dispatch => {
+    return fetch(
+      `${API_ROOT}/conversation/${conversation_id}/remove_user/${user_id}`,
+      {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ conversation_id, user_id })
+      }
+    )
+      .then(res => res.json())
+      .then(json => dispatch(receiveLeftConversation(json)));
+  };
+};
+
+/* --------------------------------------- */
+
 const receiveViewConversation = json => ({
   type: "RECEIVE_VIEW_CONVERSATION",
   payload: json
-})
+});
 
 export const updateViewConversation = (user_id, conversation_id) => {
   return dispatch => {
@@ -192,8 +245,8 @@ export const updateViewConversation = (user_id, conversation_id) => {
     })
       .then(res => res.json())
       .then(message => dispatch(receiveViewConversation(message)));
-  }
-}
+  };
+};
 
 /* --------------------------------------- */
 

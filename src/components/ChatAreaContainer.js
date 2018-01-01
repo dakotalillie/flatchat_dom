@@ -11,6 +11,7 @@ import {
   fetchMessagesForActiveConversation,
   updateViewConversation
 } from "../redux/actions";
+import EditConversationModal from "./EditConversationModal";
 
 class ChatAreaContainer extends React.Component {
   componentDidMount = () => {
@@ -53,6 +54,7 @@ class ChatAreaContainer extends React.Component {
       </Row>
       <NewConversationModal />
       <UserProfileModal />
+      <EditConversationModal />
     </Grid>
   );
 }

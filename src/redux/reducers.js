@@ -34,13 +34,21 @@ export function currentUser(state = { loading: true }, action) {
 export function activeConversationId(state = null, action) {
   switch (action.type) {
     case "RECEIVE_CONVERSATIONS":  
+      // eslint-disable-next-line
       const sortedConvos = action.payload.conversations.sort((a, b) => {
-        return (
-          new Date(b.latest_message.created_at) -
-          new Date(a.latest_message.created_at)
-        );
+        if (a.latest_message && b.latest_message) {
+          return (
+            new Date(b.latest_message.created_at) -
+            new Date(a.latest_message.created_at)
+          );
+        } else if (!a.latest_message) {
+          return -1;
+        } else if (!b.latest_message) {
+          return 1;
+        }
       });
       return sortedConvos[0].id;
+    case "RECEIVE_ADDED_CONVERSATION":
     case "CHANGE_ACTIVE_CONVERSATION":
       return action.payload.id;
     default:
@@ -69,8 +77,8 @@ export function conversations(state = [], action) {
           ...oldConvo,
           latest_message: action.payload,
           messages: messages(oldConvo.messages, action)
-        }
-      })
+        };
+      });
     case "RECEIVE_CONVERSATIONS":
       return action.payload.conversations.map(conversation => ({
         ...conversation,
@@ -82,23 +90,33 @@ export function conversations(state = [], action) {
         return {
           ...oldConvo,
           loading: true
-        }
-      })
+        };
+      });
     case "RECEIVE_MESSAGES":
       return editConversation(state, action, (oldConvo, action) => {
         return {
           ...oldConvo,
           loading: false,
           messages: messages(oldConvo.messages, action)
-        }
-      })
+        };
+      });
     case "RECEIVE_VIEW_CONVERSATION":
       return editConversation(state, action, (oldConvo, action) => {
         return {
           ...oldConvo,
           last_viewed: action.payload.last_viewed
-        }
-      })  
+        };
+      });
+    case "RECEIVE_ADDED_CONVERSATION":
+      const newConversation = {
+        ...action.payload,
+        messages: []
+      };
+      return [...state, newConversation];
+    case "RECEIVE_LEFT_CONVERSATION":
+      return [...state].filter(
+        conv => conv.id !== action.payload.conversation_id
+      );
     default:
       return state;
   }
@@ -121,6 +139,20 @@ export function showUserProfileModal(state = false, action) {
       return true;
     case "HIDE_USER_PROFILE_MODAL":
       return false;
+    default:
+      return state;
+  }
+}
+
+export function showEditConversationModal(
+  state = { isShown: false, conversationId: null },
+  action
+) {
+  switch (action.type) {
+    case "SHOW_EDIT_CONVERSATION_MODAL":
+      return { isShown: true, conversationId: action.payload };
+    case "HIDE_EDIT_CONVERSATION_MODAL":
+      return { isShown: false, conversationId: null };
     default:
       return state;
   }

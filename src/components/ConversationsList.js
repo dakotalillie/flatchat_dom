@@ -9,11 +9,19 @@ const ConversationsList = ({ conversations }) => {
 
   if (conversations.length) {
     cons = conversations
-      .sort(
-        (a, b) =>
-          new Date(b.latest_message.created_at) -
-          new Date(a.latest_message.created_at)
-      )
+      // eslint-disable-next-line  
+      .sort((a, b) => {
+        if (a.latest_message && b.latest_message) {
+          return (
+            new Date(b.latest_message.created_at) -
+            new Date(a.latest_message.created_at)
+          );
+        } else if (!a.latest_message) {
+          return -1;
+        } else if (!b.latest_message) {
+          return 1;
+        }
+      })
       .map(c => <ConversationCard key={c.id} conversation={c} />);
   }
 

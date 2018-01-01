@@ -2,16 +2,25 @@ import React from "react";
 import Moment from "react-moment";
 import { connect } from "react-redux";
 import { Button, Glyphicon, Grid, Col, Row } from "react-bootstrap";
-import { changeActiveConversation } from "../redux/actions";
+import { changeActiveConversation, showEditConversationModal } from "../redux/actions";
 import NotificationDot from "./NotificationDot";
 
 const ConversationCard = ({
   conversation,
   activeConversationId,
   currentUserId,
-  changeActive
+  changeActive,
+  showEditConversationModal
 }) => {
-  const { id, title, latest_message, last_viewed } = conversation;
+  const { id, title, latest_message, last_viewed, users } = conversation;
+  let displayTitle;
+  if (title) {
+    displayTitle = title
+  } else {
+    const myUsers = users.filter(user => user.id !== currentUserId);
+    const userNames = myUsers.map(user => user.first_name);
+    displayTitle = userNames.join(", ")
+  }
   return (
     <div
       className={
@@ -25,23 +34,29 @@ const ConversationCard = ({
       <Grid style={styles.grid}>
         <Col xs={10}>
           <Row>
-            <h5 style={styles.title}>{title}</h5>
+            <h5 style={styles.title}>{displayTitle}</h5>
           </Row>
           <Row>
             <p style={styles.time}>
-              <Moment fromNow>{latest_message.created_at}</Moment>
+              {latest_message ? (
+                <Moment fromNow>{latest_message.created_at}</Moment>
+              ) : null}
             </p>
           </Row>
         </Col>
         <Col xs={2}>
           <Row style={styles.dotRow}>
-            {latest_message.created_at > last_viewed &&
+            {latest_message &&
+            latest_message.created_at > last_viewed &&
             latest_message.user_id !== currentUserId ? (
               <NotificationDot />
             ) : null}
           </Row>
           <Row>
-            <Button className="edit_conversation_button" style={styles.button}>
+            <Button className="edit_conversation_button" style={styles.button} onClick={e => {
+              e.stopPropagation();
+              showEditConversationModal(id)
+            }}>
               <Glyphicon glyph="option-horizontal" style={styles.glyphicon} />
             </Button>
           </Row>
@@ -94,6 +109,9 @@ const mapStateToProps = (state, ownProps) => ({
 const mapDispatchToProps = dispatch => ({
   changeActive: id => {
     dispatch(changeActiveConversation(id));
+  },
+  showEditConversationModal: id => {
+    dispatch(showEditConversationModal(id));
   }
 });
 

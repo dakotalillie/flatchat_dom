@@ -1,15 +1,37 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Button, Glyphicon } from "react-bootstrap";
-import { editConversationTitle } from "../redux/actions";
+import {
+  editConversationTitle,
+  showEditConversationModal
+} from "../redux/actions";
 
 class MessagesListHeader extends React.Component {
-  state = {
-    text: this.props.title
-  };
+  constructor(props) {
+    super(props);
+    if (this.props.title) {
+      this.state = { text: this.props.title };
+    } else {
+      this.state = { text: "" };
+    }
+  }
 
   componentWillReceiveProps = nextProps => {
-    this.setState({ text: nextProps.title });
+    if (nextProps.title) {
+      this.setState({ text: nextProps.title });
+    } else {
+      if (nextProps.users) {
+        const users = nextProps.users.filter(
+        user => user.id !== nextProps.currentUser.id
+      );
+      const userNames = users.map(
+        user => `${user.first_name} ${user.last_name}`
+      );
+      this.setState({ text: userNames.join(", ") });
+      } else {
+        this.setState({ text: "" })
+      }
+    }
   };
 
   onSubmitHandler = (e, input) => {
@@ -38,7 +60,11 @@ class MessagesListHeader extends React.Component {
             spellCheck="false"
           />
         </form>
-        <Button className="edit_conversation_button" style={styles.button}>
+        <Button
+          className="edit_conversation_button"
+          style={styles.button}
+          onClick={() => this.props.showEditConversationModal(this.props.id)}
+        >
           <Glyphicon glyph="option-horizontal" style={styles.glyphicon} />
         </Button>
       </div>
@@ -73,22 +99,33 @@ const styles = {
   }
 };
 
-const mapStateToProps = ({ conversations, activeConversationId }) => {
+const mapStateToProps = ({
+  conversations,
+  activeConversationId,
+  currentUser
+}) => {
   const currentConvo = conversations.find(c => c.id === activeConversationId);
   return currentConvo
     ? {
         id: currentConvo.id,
-        title: currentConvo.title
+        title: currentConvo.title,
+        users: currentConvo.users,
+        currentUser
       }
     : {
         id: null,
-        title: ""
+        title: null,
+        users: null,
+        currentUser
       };
 };
 
 const mapDispatchToProps = dispatch => ({
   editConversationTitle: (conversationId, text) => {
     dispatch(editConversationTitle(conversationId, text));
+  },
+  showEditConversationModal: conversationId => {
+    dispatch(showEditConversationModal(conversationId));
   }
 });
 
