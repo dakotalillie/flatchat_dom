@@ -45,6 +45,7 @@ class MessagesListHeader extends React.Component {
 
   render() {
     let input;
+    console.log(this.props.activeConversationId)
     return (
       <div className="messages_list_header" style={styles.header}>
         <form onSubmit={e => this.onSubmitHandler(e, input)}>
@@ -60,13 +61,13 @@ class MessagesListHeader extends React.Component {
             spellCheck="false"
           />
         </form>
-        <Button
+        {this.props.id ? <Button
           className="edit_conversation_button"
           style={styles.button}
           onClick={() => this.props.showEditConversationModal(this.props.id)}
         >
           <Glyphicon glyph="option-horizontal" style={styles.glyphicon} />
-        </Button>
+        </Button> : null}
       </div>
     );
   }
@@ -92,7 +93,8 @@ const styles = {
     fontSize: "1.5rem",
     fontWeight: "700",
     marginTop: "9px",
-    textAlign: "center"
+    textAlign: "center",
+    width: "90%"
   },
   glyphicon: {
     paddingTop: "4px"

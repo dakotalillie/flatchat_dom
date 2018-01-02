@@ -6,7 +6,8 @@ import {
   ControlLabel
 } from "react-bootstrap";
 import { connect } from "react-redux";
-import { hideNewConversationModal, addConversation } from "../redux/actions";
+import { hideNewConversationModal, receiveAddedConversation } from "../redux/actions";
+import uuid from "uuid"
 import Typeahead from "./Typeahead";
 
 class NewConversationModal extends React.Component {
@@ -18,11 +19,24 @@ class NewConversationModal extends React.Component {
   };
   handleSubmit = e => {
     e.preventDefault();
+    const currentUser = {
+      ...this.props.currentUser,
+      first_name: this.props.currentUser.firstName,
+      last_name: this.props.currentUser.lastName
+    }
     const users = [
-      this.props.currentUser.id,
-      ...this.state.selected.map(i => i.id)
-    ]
-    this.props.newConversation(users);
+      currentUser,
+      ...this.state.selected
+    ];
+    this.props.newConversation({
+      id: uuid.v4(),
+      title: null,
+      latest_message: null,
+      last_viewed: null,
+      users,
+      messages: null,
+      loading: false
+    });
     this.props.hide();
     this.setState({ selected: [] });
   };
@@ -61,7 +75,7 @@ const mapDispatchToProps = dispatch => ({
     dispatch(hideNewConversationModal());
   },
   newConversation: title => {
-    dispatch(addConversation(title));
+    dispatch(receiveAddedConversation(title));
   }
 });
 

@@ -4,12 +4,16 @@ import ConversationsListHeader from "./ConversationsListHeader";
 import AddConversationButton from "./AddConversationButton";
 import ConversationCard from "./ConversationCard";
 
-const ConversationsList = ({ conversations }) => {
+const ConversationsList = ({
+  conversations,
+  currentUser,
+  addedConversation
+}) => {
   let cons;
 
   if (conversations.length) {
     cons = conversations
-      // eslint-disable-next-line  
+      // eslint-disable-next-line
       .sort((a, b) => {
         if (a.latest_message && b.latest_message) {
           return (
@@ -28,13 +32,17 @@ const ConversationsList = ({ conversations }) => {
   return (
     <div style={styles.conversationsList}>
       <ConversationsListHeader />
-      {cons}
+      <div id="conversations_list_container" style={styles.container}>{cons}</div>
       <AddConversationButton />
     </div>
   );
 };
 
 const styles = {
+  container: {
+    height: "calc(100% - 80px)",
+    overflow: "scroll"
+  },
   conversationsList: {
     borderRadius: "8px",
     boxShadow: "0px 0px 5px #999",
@@ -45,7 +53,8 @@ const styles = {
 
 const mapStateToProps = state => {
   return {
-    conversations: state.conversations
+    conversations: state.conversations,
+    currentUser: state.currentUser
   };
 };
 

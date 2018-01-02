@@ -4,8 +4,10 @@
   "private": true,
   "dependencies": {
     "actioncable": "^5.1.4",
+    "halogen": "^0.2.0",
     "moment": "^2.20.1",
     "react": "^16.2.0",
+    "react-actioncable-provider": "^1.0.2",
     "react-bootstrap": "^0.31.5",
     "react-bootstrap-typeahead": "^2.0.2",
     "react-dom": "^16.2.0",

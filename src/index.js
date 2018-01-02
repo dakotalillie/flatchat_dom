@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { createStore, combineReducers, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
+import { ActionCableProvider } from "react-actioncable-provider";
 import thunk from "redux-thunk";
 import "./index.css";
 import App from "./components/App";
@@ -17,9 +18,11 @@ const store = createStore(
 
 ReactDOM.render(
   <Provider store={store}>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <ActionCableProvider url="ws://localhost:3000/cable" >
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ActionCableProvider>
   </Provider>,
   document.getElementById("root")
 );

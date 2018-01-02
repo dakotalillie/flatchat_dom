@@ -1,13 +1,28 @@
 import React from "react";
 
-const Message = ({ children, userMessage }) => (
-  <div
-    className={userMessage ? "user_message" : "foreign_message"}
-    style={styles.messageWrapper}
-  >
-    <div style={styles.message} className="message_content">{children}</div>
-  </div>
-);
+const Message = ({
+  children,
+  userMessage,
+  user,
+  groupChat,
+  lastMessageBySameUser
+}) => {
+  return (
+    <div
+      className={userMessage ? "user_message" : "foreign_message"}
+      style={styles.messageWrapper}
+    >
+      {!userMessage && groupChat && !lastMessageBySameUser ? (
+        <p style={styles.name}>
+          {user.first_name} {user.last_name}
+        </p>
+      ) : null}
+      <div style={styles.message} className="message_content">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const styles = {
   message: {
@@ -22,8 +37,11 @@ const styles = {
     maxWidth: "80%"
   },
   messageWrapper: {
-    paddingTop: "5px",
+    paddingTop: "5px"
     // textAlign: "-webkit-right"
+  },
+  name: {
+    margin: "0 5px 3px"
   }
 };
 

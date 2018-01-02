@@ -131,7 +131,7 @@ const sendAddedMessage = conversation_id => ({
   }
 });
 
-const receiveAddedMessage = message => ({
+export const receiveAddedMessage = message => ({
   type: "RECEIVE_ADDED_MESSAGE",
   payload: message
 });
@@ -143,9 +143,9 @@ export const addMessage = (text, conversation_id, user_id) => {
       method: "POST",
       headers,
       body: JSON.stringify({ conversation_id, user_id, text })
-    })
-      .then(res => res.json())
-      .then(message => dispatch(receiveAddedMessage(message)));
+    });
+      // .then(res => res.json())
+      // .then(message => dispatch(receiveAddedMessage(message)));
   };
 };
 
@@ -155,10 +155,12 @@ const sendAddedConversation = conversation_id => ({
   type: "SEND_ADDED_CONVERSATION"
 });
 
-const receiveAddedConversation = conversation => ({
-  type: "RECEIVE_ADDED_CONVERSATION",
-  payload: conversation
-});
+export const receiveAddedConversation = conversation => {
+  return {
+    type: "RECEIVE_ADDED_CONVERSATION",
+    payload: conversation
+  }
+};
 
 export const addConversation = users => {
   return dispatch => {

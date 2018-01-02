@@ -33,14 +33,11 @@ export function currentUser(state = { loading: true }, action) {
 
 export function activeConversationId(state = null, action) {
   switch (action.type) {
-    case "RECEIVE_CONVERSATIONS":  
+    case "RECEIVE_CONVERSATIONS":
       // eslint-disable-next-line
       const sortedConvos = action.payload.conversations.sort((a, b) => {
         if (a.latest_message && b.latest_message) {
-          return (
-            new Date(b.latest_message.created_at) -
-            new Date(a.latest_message.created_at)
-          );
+          return new Date(b.latest_message.created_at) - new Date(a.latest_message.created_at);
         } else if (!a.latest_message) {
           return -1;
         } else if (!b.latest_message) {
@@ -50,11 +47,17 @@ export function activeConversationId(state = null, action) {
       if (sortedConvos.length) {
         return sortedConvos[0].id;
       } else {
-        return state
+        return state;
       }
     case "RECEIVE_ADDED_CONVERSATION":
+      if (!action.payload.latest_message) {
+        return action.payload.id;
+      }
+      return state;
     case "CHANGE_ACTIVE_CONVERSATION":
       return action.payload.id;
+    case "RECEIVE_LEFT_CONVERSATION":
+      return null;  
     default:
       return state;
   }
@@ -112,9 +115,13 @@ export function conversations(state = [], action) {
         };
       });
     case "RECEIVE_ADDED_CONVERSATION":
+      let myMessages = [];
+      if (action.payload.messages) {
+        myMessages = action.payload.messages
+      };
       const newConversation = {
         ...action.payload,
-        messages: []
+        messages: myMessages
       };
       return [...state, newConversation];
     case "RECEIVE_LEFT_CONVERSATION":

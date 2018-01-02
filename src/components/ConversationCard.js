@@ -1,8 +1,13 @@
 import React from "react";
 import Moment from "react-moment";
 import { connect } from "react-redux";
+import { ActionCable } from "react-actioncable-provider";
 import { Button, Glyphicon, Grid, Col, Row } from "react-bootstrap";
-import { changeActiveConversation, showEditConversationModal } from "../redux/actions";
+import {
+  changeActiveConversation,
+  showEditConversationModal,
+  receiveAddedMessage
+} from "../redux/actions";
 import NotificationDot from "./NotificationDot";
 
 const ConversationCard = ({
@@ -10,16 +15,17 @@ const ConversationCard = ({
   activeConversationId,
   currentUserId,
   changeActive,
-  showEditConversationModal
+  showEditConversationModal,
+  receiveNewMessage
 }) => {
   const { id, title, latest_message, last_viewed, users } = conversation;
   let displayTitle;
   if (title) {
-    displayTitle = title
+    displayTitle = title;
   } else {
     const myUsers = users.filter(user => user.id !== currentUserId);
     const userNames = myUsers.map(user => user.first_name);
-    displayTitle = userNames.join(", ")
+    displayTitle = userNames.join(", ");
   }
   return (
     <div
@@ -31,6 +37,14 @@ const ConversationCard = ({
       style={styles.wrapper}
       onClick={e => changeActive(id)}
     >
+      {latest_message ? (
+        <ActionCable
+          channel={{ channel: "ConversationChannel", conversation: id }}
+          onReceived={message => {
+            receiveNewMessage(message);
+          }}
+        />
+      ) : null}
       <Grid style={styles.grid}>
         <Col xs={10}>
           <Row>
@@ -47,16 +61,21 @@ const ConversationCard = ({
         <Col xs={2}>
           <Row style={styles.dotRow}>
             {latest_message &&
-            latest_message.created_at > last_viewed &&
-            latest_message.user_id !== currentUserId ? (
+            ((latest_message.created_at > last_viewed || last_viewed === null) &&
+              latest_message.user_id !== currentUserId &&
+              activeConversationId !== id) ? (
               <NotificationDot />
             ) : null}
           </Row>
           <Row>
-            <Button className="edit_conversation_button" style={styles.button} onClick={e => {
-              e.stopPropagation();
-              showEditConversationModal(id)
-            }}>
+            <Button
+              className="edit_conversation_button"
+              style={styles.button}
+              onClick={e => {
+                e.stopPropagation();
+                showEditConversationModal(id);
+              }}
+            >
               <Glyphicon glyph="option-horizontal" style={styles.glyphicon} />
             </Button>
           </Row>
@@ -112,6 +131,9 @@ const mapDispatchToProps = dispatch => ({
   },
   showEditConversationModal: id => {
     dispatch(showEditConversationModal(id));
+  },
+  receiveNewMessage: message => {
+    dispatch(receiveAddedMessage(message));
   }
 });
 

@@ -5,8 +5,10 @@ import ChatAreaContainer from "./ChatAreaContainer";
 import Welcome from "./Welcome";
 import { fetchCurrentUser, noToken } from "../redux/actions";
 
+
 class App extends React.Component {
   componentWillMount = () => {
+    console.log(this.props.cableApp)
     const token = localStorage.getItem("token");
     if (token) {
       this.props.fetchCurrentUser()

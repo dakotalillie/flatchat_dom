@@ -1,6 +1,7 @@
 import React from "react";
 import { Grid, Row, Col } from "react-bootstrap";
 import { connect } from "react-redux";
+import { ActionCable } from "react-actioncable-provider";
 import MessagesList from "./MessagesList";
 import ConversationsList from "./ConversationsList";
 import InputField from "./InputField";
@@ -9,7 +10,9 @@ import UserProfileModal from "./UserProfileModal";
 import {
   fetchConversations,
   fetchMessagesForActiveConversation,
-  updateViewConversation
+  updateViewConversation,
+  receiveAddedConversation,
+  receiveAddedMessage
 } from "../redux/actions";
 import EditConversationModal from "./EditConversationModal";
 
@@ -24,23 +27,45 @@ class ChatAreaContainer extends React.Component {
     const activeConversation = nextProps.conversations.find(
       c => c.id === nextProps.activeConversationId
     );
-    if (activeConversation && !activeConversation.loading && !activeConversation.messages.length) {
+    if (
+      activeConversation &&
+      !activeConversation.loading &&
+      !activeConversation.messages.length &&
+      activeConversation.last_viewed
+    ) {
       this.props.fetchMessagesForActiveConversation(
         nextProps.activeConversationId
       );
     }
 
     // update conversation's last_checked time every time a new conversation is opened
-    if (nextProps.activeConversationId !== this.props.activeConversationId) {
+    if (
+      nextProps.activeConversationId !== this.props.activeConversationId &&
+      activeConversation &&
+      activeConversation.last_viewed
+    ) {
       this.props.updateViewConversation(
         this.props.currentUserId,
         nextProps.activeConversationId
-      )
+      );
     }
   };
 
   render = () => (
     <Grid>
+      <ActionCable
+        channel={{
+          channel: "NewConversationChannel",
+          user: this.props.currentUserId
+        }}
+        onReceived={conversation => {
+          if (!this.props.conversations.find(c => c.id === conversation.id)) {
+            this.props.addedConversation(conversation);
+          } else {
+            this.props.addedMessage(conversation.messages[0])
+          }
+        }}
+      />
       <Row style={styles.topRow}>
         <Col sm={3} style={styles.col}>
           <ConversationsList />
@@ -83,7 +108,13 @@ const mapDispatchToProps = dispatch => ({
     dispatch(fetchMessagesForActiveConversation(activeConversationId));
   },
   updateViewConversation: (userId, conversationId) => {
-    dispatch(updateViewConversation(userId, conversationId))
+    dispatch(updateViewConversation(userId, conversationId));
+  },
+  addedConversation: conversation => {
+    dispatch(receiveAddedConversation(conversation));
+  },
+  addedMessage: message => {
+    dispatch(receiveAddedMessage(message))
   }
 });
 
