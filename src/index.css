@@ -34,6 +34,10 @@ body {
   text-align: -webkit-right;
 }
 
+.system_message {
+  text-align: -webkit-center;
+}
+
 .user_message > .message_content {
   background-color: #377BB5;
   color: white;

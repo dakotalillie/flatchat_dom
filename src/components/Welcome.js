@@ -76,7 +76,7 @@ const styles = {
     bottom: 0,
     left: 0,
     width: "400px",
-    height: "475px",
+    height: "fit-content",
     border: "1px solid #ddd",
     borderRadius: "5px",
     boxShadow: "0 1px 1px rgba(0,0,0,.05)",

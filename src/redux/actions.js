@@ -6,12 +6,13 @@ const headers = {
   Authorization: token
 };
 
-export const editConversationTitle = (conversationId, text) => {
+export const editConversationTitle = (conversation_id, title, message) => {
   return {
     type: "EDIT_CONVERSATION_TITLE",
     payload: {
-      conversationId,
-      text
+      conversation_id,
+      title,
+      message
     }
   };
 };
@@ -144,10 +145,20 @@ export const addMessage = (text, conversation_id, user_id) => {
       headers,
       body: JSON.stringify({ conversation_id, user_id, text })
     });
-      // .then(res => res.json())
-      // .then(message => dispatch(receiveAddedMessage(message)));
+    // .then(res => res.json())
+    // .then(message => dispatch(receiveAddedMessage(message)));
   };
 };
+
+/* --------------------------------------- */
+
+export const pushInitialMessage = message => ({
+  type: "PUSH_INITIAL_MESSAGE",
+  payload: {
+    message,
+    conversation_id: message.conversation_id
+  }
+})
 
 /* --------------------------------------- */
 
@@ -159,7 +170,7 @@ export const receiveAddedConversation = conversation => {
   return {
     type: "RECEIVE_ADDED_CONVERSATION",
     payload: conversation
-  }
+  };
 };
 
 export const addConversation = users => {
@@ -176,6 +187,18 @@ export const addConversation = users => {
       });
   };
 };
+
+/* --------------------------------------- */
+
+export const receiveAddedUsers = (conversation_id, users) => {
+  return {
+    type: "RECEIVE_ADDED_USERS",
+    payload: {
+      conversation_id,
+      users
+    }
+  }
+}
 
 /* --------------------------------------- */
 
@@ -209,25 +232,23 @@ export const fetchCurrentUser = () => {
 
 /* --------------------------------------- */
 
-const receiveLeftConversation = json => {
+export const receiveLeftConversation = (conversation_id, user_id, message) => {
   return {
     type: "RECEIVE_LEFT_CONVERSATION",
-    payload: json
+    payload: {
+      conversation_id,
+      user_id,
+      message
+    }
   };
 };
 
-export const leaveConversation = (conversation_id, user_id) => {
-  return dispatch => {
-    return fetch(
-      `${API_ROOT}/conversation/${conversation_id}/remove_user/${user_id}`,
-      {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({ conversation_id, user_id })
-      }
-    )
-      .then(res => res.json())
-      .then(json => dispatch(receiveLeftConversation(json)));
+export const leaveConversation = conversation_id => {
+  return {
+    type: "LEAVE_CONVERSATION",
+    payload: {
+      conversation_id
+    }
   };
 };
 
@@ -285,5 +306,5 @@ export const signup = params => {
       .then(res => res.json())
       .then(json => dispatch(receiveCurrentUser(json)))
       .then(() => (window.location.href = "/"));
-  }
-}
+  };
+};

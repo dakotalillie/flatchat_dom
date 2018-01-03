@@ -34,6 +34,7 @@ class NewConversationModal extends React.Component {
       latest_message: null,
       last_viewed: null,
       users,
+      new: false,
       messages: null,
       loading: false
     });

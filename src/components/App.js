@@ -5,19 +5,17 @@ import ChatAreaContainer from "./ChatAreaContainer";
 import Welcome from "./Welcome";
 import { fetchCurrentUser, noToken } from "../redux/actions";
 
-
 class App extends React.Component {
   componentWillMount = () => {
-    console.log(this.props.cableApp)
     const token = localStorage.getItem("token");
     if (token) {
-      this.props.fetchCurrentUser()
+      this.props.fetchCurrentUser();
     } else {
-      this.props.noToken()
+      this.props.noToken();
     }
   };
 
-  render = () => {    
+  render = () => {
     return (
       <div id="App">
         <Route
@@ -25,7 +23,9 @@ class App extends React.Component {
           path="/"
           render={() => {
             if (this.props.loading) {
-              return <h1>Loading</h1>;
+              return (
+                <div />
+              );
             } else if (this.props.loggedIn) {
               return <ChatAreaContainer />;
             } else {
@@ -35,7 +35,7 @@ class App extends React.Component {
         />
         <Route exact path="/welcome" component={Welcome} />
       </div>
-    )
+    );
   };
 }
 

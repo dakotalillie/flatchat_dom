@@ -12,7 +12,9 @@ import {
   fetchMessagesForActiveConversation,
   updateViewConversation,
   receiveAddedConversation,
-  receiveAddedMessage
+  receiveAddedMessage,
+  receiveAddedUsers,
+  pushInitialMessage
 } from "../redux/actions";
 import EditConversationModal from "./EditConversationModal";
 
@@ -29,9 +31,10 @@ class ChatAreaContainer extends React.Component {
     );
     if (
       activeConversation &&
-      !activeConversation.loading &&
-      !activeConversation.messages.length &&
-      activeConversation.last_viewed
+      ((!activeConversation.loading &&
+        !activeConversation.messages.length &&
+        activeConversation.last_viewed) ||
+        activeConversation.new)
     ) {
       this.props.fetchMessagesForActiveConversation(
         nextProps.activeConversationId
@@ -40,9 +43,10 @@ class ChatAreaContainer extends React.Component {
 
     // update conversation's last_checked time every time a new conversation is opened
     if (
-      nextProps.activeConversationId !== this.props.activeConversationId &&
       activeConversation &&
-      activeConversation.last_viewed
+      ((nextProps.activeConversationId !== this.props.activeConversationId &&
+        activeConversation.last_viewed) ||
+        activeConversation.new)
     ) {
       this.props.updateViewConversation(
         this.props.currentUserId,
@@ -58,11 +62,29 @@ class ChatAreaContainer extends React.Component {
           channel: "NewConversationChannel",
           user: this.props.currentUserId
         }}
-        onReceived={conversation => {
-          if (!this.props.conversations.find(c => c.id === conversation.id)) {
-            this.props.addedConversation(conversation);
-          } else {
-            this.props.addedMessage(conversation.messages[0])
+        onReceived={response => {
+          if (response.type === "new_conversation") {
+            if (
+              !this.props.conversations.find(c => c.id === response.payload.id)
+            ) {
+              this.props.addedConversation(response.payload);
+            } else {
+              this.props.pushInitial(response.message);
+            }
+          } else if (response.type === "add_users") {
+            if (
+              !this.props.conversations.find(
+                c => c.id === response.payload.conversation.id
+              )
+            ) {
+              this.props.addedConversation(response.payload.conversation);
+            } else {
+              this.props.addedMessage(response.payload.message);
+              this.props.addedUsers(
+                response.payload.conversation.id,
+                response.payload.added_users
+              );
+            }
           }
         }}
       />
@@ -114,7 +136,13 @@ const mapDispatchToProps = dispatch => ({
     dispatch(receiveAddedConversation(conversation));
   },
   addedMessage: message => {
-    dispatch(receiveAddedMessage(message))
+    dispatch(receiveAddedMessage(message));
+  },
+  addedUsers: (conversation_id, users) => {
+    dispatch(receiveAddedUsers(conversation_id, users));
+  },
+  pushInitial: message => {
+    dispatch(pushInitialMessage(message))
   }
 });
 

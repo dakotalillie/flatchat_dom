@@ -37,7 +37,10 @@ export function activeConversationId(state = null, action) {
       // eslint-disable-next-line
       const sortedConvos = action.payload.conversations.sort((a, b) => {
         if (a.latest_message && b.latest_message) {
-          return new Date(b.latest_message.created_at) - new Date(a.latest_message.created_at);
+          return (
+            new Date(b.latest_message.created_at) -
+            new Date(a.latest_message.created_at)
+          );
         } else if (!a.latest_message) {
           return -1;
         } else if (!b.latest_message) {
@@ -56,8 +59,11 @@ export function activeConversationId(state = null, action) {
       return state;
     case "CHANGE_ACTIVE_CONVERSATION":
       return action.payload.id;
-    case "RECEIVE_LEFT_CONVERSATION":
-      return null;  
+    case "LEAVE_CONVERSATION":
+      if (state === action.payload.conversation_id) {
+        return null;
+      }
+      return state;
     default:
       return state;
   }
@@ -66,68 +72,69 @@ export function activeConversationId(state = null, action) {
 export function conversations(state = [], action) {
   switch (action.type) {
     case "ADD_CONVERSATION":
-      return [
-        ...state,
-        {
-          id: action.payload.id,
-          title: action.payload.title,
-          messages: action.payload.messages
-        }
-      ];
+      return [...state, { id: action.payload.id, title: action.payload.title, messages: action.payload.messages }];
     case "EDIT_CONVERSATION_TITLE":
       return editConversation(state, action, (oldConvo, action) => {
-        return { ...oldConvo, title: action.payload.text };
+        return { ...oldConvo, title: action.payload.title, latest_message: action.payload.message, messages: messages(oldConvo.messages, action) };
       });
     case "RECEIVE_ADDED_MESSAGE":
       return editConversation(state, action, (oldConvo, action) => {
-        return {
-          ...oldConvo,
-          latest_message: action.payload,
-          messages: messages(oldConvo.messages, action)
-        };
+        if (oldConvo.messages.length) {
+          return { ...oldConvo, latest_message: action.payload, messages: messages(oldConvo.messages, action) };
+        }
+        return { ...oldConvo, latest_message: action.payload };
+      });
+    case "PUSH_INITIAL_MESSAGE": 
+      return editConversation(state, action, (oldConvo, action) => {
+        return { ...oldConvo, latest_message: action.payload, messages: messages(oldConvo.messages, action) };
+      });  
+    case "RECEIVE_ADDED_USERS":
+      return editConversation(state, action, (oldConvo, action) => {
+        return { ...oldConvo, users: oldConvo.users.concat(action.payload.users) };
       });
     case "RECEIVE_CONVERSATIONS":
       return action.payload.conversations.map(conversation => ({
         ...conversation,
         messages: [],
-        loading: false
+        loading: false,
+        new: false
       }));
     case "REQUEST_MESSAGES":
       return editConversation(state, action, (oldConvo, action) => {
-        return {
-          ...oldConvo,
-          loading: true
-        };
+        return { ...oldConvo, loading: true, new: false };
       });
     case "RECEIVE_MESSAGES":
       return editConversation(state, action, (oldConvo, action) => {
-        return {
-          ...oldConvo,
-          loading: false,
-          messages: messages(oldConvo.messages, action)
-        };
+        return { ...oldConvo, loading: false, messages: messages(oldConvo.messages, action)};
       });
     case "RECEIVE_VIEW_CONVERSATION":
       return editConversation(state, action, (oldConvo, action) => {
-        return {
-          ...oldConvo,
-          last_viewed: action.payload.last_viewed
-        };
+        return { ...oldConvo, last_viewed: action.payload.last_viewed, new: false };
       });
     case "RECEIVE_ADDED_CONVERSATION":
       let myMessages = [];
       if (action.payload.messages) {
-        myMessages = action.payload.messages
-      };
-      const newConversation = {
-        ...action.payload,
-        messages: myMessages
-      };
+        myMessages = action.payload.messages;
+      }
+      const newConversation = { ...action.payload, messages: myMessages, loading: false };
       return [...state, newConversation];
+    case "LEAVE_CONVERSATION":
+      return [...state].filter(conv => conv.id !== action.payload.conversation_id);
     case "RECEIVE_LEFT_CONVERSATION":
-      return [...state].filter(
-        conv => conv.id !== action.payload.conversation_id
-      );
+      return editConversation(state, action, (oldConvo, action) => {
+        return { ...oldConvo, users: oldConvo.users.filter(u => u.id !== action.payload.user_id), latest_message: action.payload.message, messages: messages(oldConvo.messages, action) };
+      });
+    default:
+      return state;
+  }
+}
+
+export function conversationsLoading(state = false, action) {
+  switch (action.type) {
+    case "REQUEST_CONVERSATIONS":
+      return true;
+    case "RECEIVE_CONVERSATIONS":
+      return false;
     default:
       return state;
   }
@@ -177,6 +184,10 @@ function messages(state = [], action) {
       return [...state, action.payload];
     case "RECEIVE_MESSAGES":
       return [...state, ...action.payload.messages];
+    case "PUSH_INITIAL_MESSAGE":
+    case "EDIT_CONVERSATION_TITLE":
+    case "RECEIVE_LEFT_CONVERSATION":
+      return [...state, action.payload.message];
     default:
       return state;
   }

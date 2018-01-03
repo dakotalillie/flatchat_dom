@@ -6,6 +6,7 @@
     "actioncable": "^5.1.4",
     "halogen": "^0.2.0",
     "moment": "^2.20.1",
+    "prop-types": "^15.6.0",
     "react": "^16.2.0",
     "react-actioncable-provider": "^1.0.2",
     "react-bootstrap": "^0.31.5",
@@ -15,6 +16,7 @@
     "react-redux": "^5.0.6",
     "react-router-dom": "^4.2.2",
     "react-scripts": "1.0.17",
+    "react-spinners": "^0.2.5",
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
     "uuid": "^3.1.0"

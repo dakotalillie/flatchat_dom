@@ -4,15 +4,23 @@ const Message = ({
   children,
   userMessage,
   user,
-  groupChat,
-  lastMessageBySameUser
+  lastMessageBySameUser,
+  systemMessage
 }) => {
+  let messageClass;
+  if (userMessage) {
+    messageClass = "user_message"
+  } else if (systemMessage) {
+    messageClass = "system_message"
+  } else {
+    messageClass = "foreign_message"
+  }
   return (
     <div
-      className={userMessage ? "user_message" : "foreign_message"}
+      className={messageClass}
       style={styles.messageWrapper}
     >
-      {!userMessage && groupChat && !lastMessageBySameUser ? (
+      {user && !userMessage && !lastMessageBySameUser ? (
         <p style={styles.name}>
           {user.first_name} {user.last_name}
         </p>

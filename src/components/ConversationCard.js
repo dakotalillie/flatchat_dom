@@ -6,7 +6,11 @@ import { Button, Glyphicon, Grid, Col, Row } from "react-bootstrap";
 import {
   changeActiveConversation,
   showEditConversationModal,
-  receiveAddedMessage
+  receiveAddedMessage,
+  editConversationTitle,
+  receiveLeftConversation,
+  leaveConversation,
+  updateViewConversation
 } from "../redux/actions";
 import NotificationDot from "./NotificationDot";
 
@@ -16,16 +20,24 @@ const ConversationCard = ({
   currentUserId,
   changeActive,
   showEditConversationModal,
-  receiveNewMessage
+  receiveNewMessage,
+  editTitle,
+  lConversation,
+  receiveLConversation,
+  viewConversation
 }) => {
   const { id, title, latest_message, last_viewed, users } = conversation;
   let displayTitle;
   if (title) {
     displayTitle = title;
   } else {
-    const myUsers = users.filter(user => user.id !== currentUserId);
-    const userNames = myUsers.map(user => user.first_name);
-    displayTitle = userNames.join(", ");
+    try {
+      const myUsers = users.filter(user => user.id !== currentUserId);
+      const userNames = myUsers.map(user => user.first_name);
+      displayTitle = userNames.join(", ");
+    } catch (err) {
+      debugger;
+    }
   }
   return (
     <div
@@ -40,8 +52,32 @@ const ConversationCard = ({
       {latest_message ? (
         <ActionCable
           channel={{ channel: "ConversationChannel", conversation: id }}
-          onReceived={message => {
-            receiveNewMessage(message);
+          onReceived={response => {
+            if (response.type === "send_message") {
+              receiveNewMessage(response.payload);
+              if (id === activeConversationId) {
+                viewConversation(
+                  activeConversationId,
+                  currentUserId
+                );
+              }
+            } else if (response.type === "rename_conversation") {
+              editTitle(
+                response.payload.conversation_id,
+                response.payload.title,
+                response.payload.message
+              );
+            } else if (response.type === "leave_conversation") {
+              if (response.payload.user_id === currentUserId) {
+                lConversation(response.payload.conversation_id);
+              } else {
+                receiveLConversation(
+                  response.payload.conversation_id,
+                  response.payload.user_id,
+                  response.payload.message
+                );
+              }
+            }
           }}
         />
       ) : null}
@@ -61,7 +97,8 @@ const ConversationCard = ({
         <Col xs={2}>
           <Row style={styles.dotRow}>
             {latest_message &&
-            ((latest_message.created_at > last_viewed || last_viewed === null) &&
+            ((latest_message.created_at > last_viewed ||
+              last_viewed === null) &&
               latest_message.user_id !== currentUserId &&
               activeConversationId !== id) ? (
               <NotificationDot />
@@ -134,6 +171,18 @@ const mapDispatchToProps = dispatch => ({
   },
   receiveNewMessage: message => {
     dispatch(receiveAddedMessage(message));
+  },
+  editTitle: (conversation_id, title, message) => {
+    dispatch(editConversationTitle(conversation_id, title, message));
+  },
+  lConversation: conversation_id => {
+    dispatch(leaveConversation(conversation_id));
+  },
+  receiveLConversation: (conversation_id, user_id, message) => {
+    dispatch(receiveLeftConversation(conversation_id, user_id, message));
+  },
+  viewConversation: (conversation_id, user_id) => {
+    dispatch(updateViewConversation(user_id, conversation_id));
   }
 });
 

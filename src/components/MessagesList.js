@@ -1,9 +1,10 @@
 import React from "react";
 import { connect } from "react-redux";
+import { ClipLoader } from "react-spinners";
 import Message from "./Message";
 import MessagesListHeader from "./MessagesListHeader";
 
-const MessagesList = ({ currentUser, messages, users }) => {
+const MessagesList = ({ currentUser, messages, users, loading }) => {
   const sortedMessages = messages.sort(
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
@@ -13,28 +14,38 @@ const MessagesList = ({ currentUser, messages, users }) => {
         key={m.id}
         userMessage={m.user_id === currentUser.id}
         user={users.find(u => u.id === m.user_id)}
-        groupChat={users.length > 2}
         lastMessageBySameUser={
           i < sortedMessages.length - 1
             ? sortedMessages[i].user_id === sortedMessages[i + 1].user_id
             : false
         }
+        systemMessage={!m.user_id}
       >
         {m.text}
       </Message>
     );
   });
-  return (
-    <div style={styles.messagesListContainer} id="messages_list_container">
+  return <div style={styles.messagesListContainer} id="messages_list_container">
       <MessagesListHeader />
       <div style={styles.messagesList} id="messages_list">
-        {myMessages}
+        {loading ? <div style={styles.loaderContainer}>
+            <ClipLoader color={"#377BB5"} size={60} />
+          </div> : myMessages}
       </div>
-    </div>
-  );
+    </div>;
 };
 
 const styles = {
+  loaderContainer: {
+    position: "absolute",
+    margin: "auto",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    width: "45px",
+    height: "20px"
+  },
   messagesList: {
     color: "#888",
     display: "flex",
@@ -60,9 +71,10 @@ const mapStateToProps = ({
     ? {
         currentUser,
         messages: currentConvo.messages,
-        users: currentConvo.users
+        users: currentConvo.users,
+        loading: currentConvo.loading
       }
-    : { currentUser, messages: [], users: [] };
+    : { currentUser, messages: [], users: [], loading: false };
 };
 
 export default connect(mapStateToProps, null)(MessagesList);

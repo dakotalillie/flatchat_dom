@@ -1,9 +1,11 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Button, Glyphicon } from "react-bootstrap";
+import { ActionCable } from "react-actioncable-provider";
 import {
   editConversationTitle,
-  showEditConversationModal
+  showEditConversationModal,
+  updateViewConversation
 } from "../redux/actions";
 
 class MessagesListHeader extends React.Component {
@@ -22,14 +24,14 @@ class MessagesListHeader extends React.Component {
     } else {
       if (nextProps.users) {
         const users = nextProps.users.filter(
-        user => user.id !== nextProps.currentUser.id
-      );
-      const userNames = users.map(
-        user => `${user.first_name} ${user.last_name}`
-      );
-      this.setState({ text: userNames.join(", ") });
+          user => user.id !== nextProps.currentUser.id
+        );
+        const userNames = users.map(
+          user => `${user.first_name} ${user.last_name}`
+        );
+        this.setState({ text: userNames.join(", ") });
       } else {
-        this.setState({ text: "" })
+        this.setState({ text: "" });
       }
     }
   };
@@ -39,15 +41,33 @@ class MessagesListHeader extends React.Component {
     if (!this.state.text.trim()) {
       return;
     }
-    this.props.editConversationTitle(this.props.id, this.state.text);
+    if (this.props.title === this.state.text) {
+      return;
+    }
+    this.refs.cable.perform("rename_conversation", {
+      conversation: this.props.id,
+      title: this.state.text,
+      user: this.props.currentUser.id
+    });
+    this.props.updateViewConversation(
+      this.props.currentUser.id,
+      this.props.id
+    );
+    // this.props.editConversationTitle(this.props.id, this.state.text);
     input.blur();
   };
 
   render() {
     let input;
-    console.log(this.props.activeConversationId)
     return (
       <div className="messages_list_header" style={styles.header}>
+        <ActionCable
+          ref="cable"
+          channel={{
+            channel: "ConversationChannel",
+            conversation: this.props.activeConversationId
+          }}
+        />
         <form onSubmit={e => this.onSubmitHandler(e, input)}>
           <input
             className="messages_list_header_title_input"
@@ -61,13 +81,15 @@ class MessagesListHeader extends React.Component {
             spellCheck="false"
           />
         </form>
-        {this.props.id ? <Button
-          className="edit_conversation_button"
-          style={styles.button}
-          onClick={() => this.props.showEditConversationModal(this.props.id)}
-        >
-          <Glyphicon glyph="option-horizontal" style={styles.glyphicon} />
-        </Button> : null}
+        {this.props.id ? (
+          <Button
+            className="edit_conversation_button"
+            style={styles.button}
+            onClick={() => this.props.showEditConversationModal(this.props.id)}
+          >
+            <Glyphicon glyph="option-horizontal" style={styles.glyphicon} />
+          </Button>
+        ) : null}
       </div>
     );
   }
@@ -128,6 +150,9 @@ const mapDispatchToProps = dispatch => ({
   },
   showEditConversationModal: conversationId => {
     dispatch(showEditConversationModal(conversationId));
+  },
+  updateViewConversation: (user_id, conversation_id) => {
+    dispatch(updateViewConversation(user_id, conversation_id));
   }
 });
 
