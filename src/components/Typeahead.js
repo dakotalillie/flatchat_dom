@@ -19,22 +19,40 @@ class Typeahead extends React.Component {
         });
       });
   };
-  render = () => (
-    <AsyncTypeahead
-      {...this.state}
-      multiple
-      labelKey={option =>
-        `${option.username} (${option.first_name} ${option.last_name})`
-      }
-      minLength={2}
-      onSearch={this.handleSearch}
-      placeholder="Add users"
-      onChange={selected => {
-        this.props.handleSelect(selected);
-      }}
-      selected={this.props.selected}
-    />
-  );
+
+  render = () => {
+    return (
+      <AsyncTypeahead
+        {...this.state}
+        multiple
+        labelKey={option =>
+          `${option.username} (${option.first_name} ${option.last_name})`
+        }
+        minLength={2}
+        onSearch={this.handleSearch}
+        placeholder="Add users"
+        onChange={selected => {
+          this.props.handleSelect(selected);
+        }}
+        selected={this.props.selected}
+        useCache={false}
+        delay={0}
+        isLoading={this.state.isLoading}
+        filterBy={(option, text) => {
+          let good = true;
+          this.props.dontSearch.forEach(banned => {
+            if (option.id === banned) {
+              good = false;
+            }
+          });
+          if (good === false) {
+            return;
+          }
+          return option;
+        }}
+      />
+    );
+  };
 }
 
 export default Typeahead;

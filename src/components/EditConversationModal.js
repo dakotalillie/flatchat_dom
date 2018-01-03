@@ -71,66 +71,73 @@ class EditConversationModal extends React.Component {
     this.props.hide();
     this.setState({ selected: [] });
   };
-  render = () => (
-    <Modal show={this.props.isShown} onHide={this.props.hide}>
-      {this.props.conversation ? (
+  render = () => {
+    return (
+      <Modal show={this.props.isShown} onHide={this.props.hide}>
+        {this.props.conversation ? (
+          <ActionCable
+            ref="cable"
+            channel={{
+              channel: "ConversationChannel",
+              conversation: this.props.conversation.id
+            }}
+          />
+        ) : null}
         <ActionCable
-          ref="cable"
+          ref="newCable"
           channel={{
-            channel: "ConversationChannel",
-            conversation: this.props.conversation.id
+            channel: "NewConversationChannel",
+            user: this.props.currentUser.id
           }}
         />
-      ) : null}
-      <ActionCable
-        ref="newCable"
-        channel={{
-          channel: "NewConversationChannel",
-          user: this.props.currentUser.id
-        }}
-      />
-      <form onSubmit={this.handleSubmit}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Conversation</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <FormGroup>
-            <ControlLabel>Conversation Title</ControlLabel>
-            <FormControl
-              type="text"
-              value={this.state.title}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <ControlLabel>Conversation Members</ControlLabel>
-            <FormControl.Static>
-              {this.props.conversation
-                ? this.props.conversation.users
-                    .map(u => `${u.first_name} ${u.last_name}`)
-                    .join(", ")
-                : null}
-            </FormControl.Static>
-          </FormGroup>
-          <FormGroup controlId="formBasicText">
-            <ControlLabel>Add people to this conversation:</ControlLabel>
-            <Typeahead
-              handleSelect={this.handleSelect}
-              selected={this.state.selected}
-            />
-          </FormGroup>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button bsStyle="danger" onClick={this.handleDelete}>
-            Leave Conversation
-          </Button>
-          <Button bsStyle="success" type="submit">
-            Save
-          </Button>
-        </Modal.Footer>
-      </form>
-    </Modal>
-  );
+        <form onSubmit={this.handleSubmit}>
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Conversation</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <FormGroup>
+              <ControlLabel>Conversation Title</ControlLabel>
+              <FormControl
+                type="text"
+                value={this.state.title}
+                onChange={this.handleChange}
+              />
+            </FormGroup>
+            <FormGroup>
+              <ControlLabel>Conversation Members</ControlLabel>
+              <FormControl.Static>
+                {this.props.conversation
+                  ? this.props.conversation.users
+                      .map(u => `${u.first_name} ${u.last_name}`)
+                      .join(", ")
+                  : null}
+              </FormControl.Static>
+            </FormGroup>
+            <FormGroup controlId="formBasicText">
+              <ControlLabel>Add people to this conversation:</ControlLabel>
+              <Typeahead
+                handleSelect={this.handleSelect}
+                selected={this.state.selected}
+                dontSearch={
+                  this.props.conversation
+                    ? this.props.conversation.users.map(u => u.id)
+                    : []
+                }
+              />
+            </FormGroup>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button bsStyle="danger" onClick={this.handleDelete}>
+              Leave Conversation
+            </Button>
+            <Button bsStyle="success" type="submit">
+              Save
+            </Button>
+          </Modal.Footer>
+        </form>
+      </Modal>
+    );
+  };
 }
 
 function mapStateToProps(state) {
