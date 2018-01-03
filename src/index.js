@@ -18,7 +18,7 @@ const store = createStore(
 
 ReactDOM.render(
   <Provider store={store}>
-    <ActionCableProvider url="ws://localhost:3000/cable" >
+    <ActionCableProvider url="wss://flatchat-api.herokuapp.com/api/v1/cable">
       <BrowserRouter>
         <App />
       </BrowserRouter>
