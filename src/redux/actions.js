@@ -1,4 +1,4 @@
-export const API_ROOT = `http://localhost:3000/api/v1`;
+export const API_ROOT = `https://flatchat-api.herokuapp.com/api/v1`;
 const token = localStorage.getItem("token");
 const headers = {
   "Content-Type": "application/json",
