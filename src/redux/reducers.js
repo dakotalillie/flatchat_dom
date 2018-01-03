@@ -86,7 +86,7 @@ export function conversations(state = [], action) {
       });
     case "PUSH_INITIAL_MESSAGE": 
       return editConversation(state, action, (oldConvo, action) => {
-        return { ...oldConvo, latest_message: action.payload, messages: messages(oldConvo.messages, action) };
+        return { ...oldConvo, latest_message: action.payload.message, messages: messages(oldConvo.messages, action) };
       });  
     case "RECEIVE_ADDED_USERS":
       return editConversation(state, action, (oldConvo, action) => {
