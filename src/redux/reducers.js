@@ -58,7 +58,10 @@ export function activeConversationId(state = null, action) {
       }
       return state;
     case "CHANGE_ACTIVE_CONVERSATION":
-      return action.payload.id;
+      if (action.payload.id) {
+        return action.payload.id;
+      }  
+      return state
     case "LEAVE_CONVERSATION":
       if (state === action.payload.conversation_id) {
         return null;

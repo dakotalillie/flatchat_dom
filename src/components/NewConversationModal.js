@@ -19,6 +19,9 @@ class NewConversationModal extends React.Component {
   };
   handleSubmit = e => {
     e.preventDefault();
+    if (!this.state.selected.length) {
+      return
+    }
     const currentUser = {
       ...this.props.currentUser,
       first_name: this.props.currentUser.firstName,
@@ -50,6 +53,7 @@ class NewConversationModal extends React.Component {
             <Typeahead
               handleSelect={this.handleSelect}
               selected={this.state.selected}
+              dontSearch={[this.props.currentUser.id]}
             />
           </FormGroup>
         </Modal.Body>
